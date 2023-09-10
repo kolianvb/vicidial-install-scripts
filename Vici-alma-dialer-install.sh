@@ -1,15 +1,33 @@
-#!/bin/sh
-
-echo "Vicidial installation AlmaLinux with WebPhone(WebRTC/SIP.js)"
+#!/bin/bash
 
 export LC_ALL=C
+timedatectl set-timezone America/New_York
+
+yum check-update
+yum update -y
+yum -y install epel-release
+yum update -y
+yum -y install yum-utils kernel kernel-devel kernel-headers screen libX11-devel
+
+
+#Disable SELINUX
+sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
+echo "Vicidial installation AlmaLinux with WebPhone(WebRTC/SIP.js)"
+
 
 if [ ! -f /usr/src/dahdi-reboot ]
+  then
+  touch /usr/src/dahdi-reboot
+  read -p 'Press Enter to Reboot: '
+  reboot
+else
+  echo "continue"
+fi
   yum groupinstall "Development Tools" -y
   
   yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
   yum -y install http://rpms.remirepo.net/enterprise/remi-release-8.rpm
-  yum -y install yum-utils
+  yum -y install yum-utils kernel kernel-devel kernel-headers screen libX11-devel
   dnf module enable php:remi-7.4 -y
 
   dnf -y install dnf-plugins-core
@@ -37,12 +55,6 @@ if [ ! -f /usr/src/dahdi-reboot ]
   cd /usr/src/vicidial-install-scripts
   curl -fsSL https://raw.githubusercontent.com/skaji/cpm/main/cpm | perl - install -g App::cpm
   /usr/local/bin/cpm install -g
-  read -p 'Press Enter to Reboot: '
-  touch /usr/src/dahdi-reboot
-  reboot
-
-else
-    echo "continue"
     #Install Asterisk Perl
     cd /usr/src
     wget http://download.vicidial.com/required-apps/asterisk-perl-0.08.tar.gz
@@ -420,4 +432,5 @@ else
     read -p 'Press Enter to Reboot: '
     
     echo "Restarting AlmaLinux"
-fi
+    reboot
+[root@s211984 vicidial-install-scripts]# 
