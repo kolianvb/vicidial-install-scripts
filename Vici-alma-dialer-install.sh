@@ -15,81 +15,29 @@ dnf module enable php:remi-7.4 -y
 dnf -y install dnf-plugins-core
 dnf config-manager --set-enabled powertools
 
-yum install -y php php-mcrypt php-cli php-gd php-curl php-mysql php-ldap php-zip php-fileinfo php-opcache wget unzip make patch gcc gcc-c++ subversion php php-devel php-gd gd-devel readline-devel php-mbstring php-mcrypt php-imap php-ldap php-mysql php-odbc php-pear php-xml php-xmlrpc curl curl-devel perl-libwww-perl ImageMagick libxml2 libxml2-devel httpd libpcap libpcap-devel libnet ncurses ncurses-devel screen kernel* mutt glibc.i686 certbot python3-certbot-apache mod_ssl openssl-devel newt-devel libxml2-devel kernel-devel sqlite-devel libuuid-devel sox sendmail lame-devel htop iftop perl-File-Which php-opcache libss7 mariadb-devel libss7* libopen* 
 yum -y install sqlite-devel
 
 dnf -y install dnf-plugins-core
 dnf config-manager --set-enabled powertools
+
+mkdir /usr/src/asterisk
+cd /usr/src/asterisk
+wget http://downloads.asterisk.org/pub/telephony/libpri/libpri-current.tar.gz
+wget http://downloads.asterisk.org/pub/telephony/asterisk/asterisk-18-current.tar.gz
+tar zxvf asterisk-18-current.tar.gz
+rm -rf asterisk-18-current.tar.gz
+cd asterisk-18*/
+bash contrib/scripts/install_prereq install
+
 
 #Install Perl Modules
 
 echo "Install Perl"
 
 yum install -y perl-CPAN perl-YAML perl-libwww-perl perl-DBI perl-DBD-MySQL perl-GD perl-Env perl-Term-ReadLine-Gnu perl-SelfLoader perl-open.noarch
-cpan -i Tk String::CRC Tk::TableMatrix Net::Address::IP::Local Term::ReadLine::Gnu Spreadsheet::Read Net::Address::IPv4::Local RPM::Specfile Spreadsheet::XLSX Spreadsheet::ReadSXC MD5 Digest::MD5 Digest::SHA1 Bundle::CPAN Pod::Usage Getopt::Long DBI DBD::mysql Net::Telnet Time::HiRes Net::Server Mail::Sendmail Unicode::Map Jcode Spreadsheet::WriteExcel OLE::Storage_Lite Proc::ProcessTable IO::Scalar Scalar::Util Spreadsheet::ParseExcel Archive::Zip Compress::Raw::Zlib Spreadsheet::XLSX Test::Tester Spreadsheet::ReadSXC Text::CSV Test::NoWarnings Text::CSV_PP File::Temp Text::CSV_XS Spreadsheet::Read LWP::UserAgent HTML::Entities HTML::Strip HTML::FormatText HTML::TreeBuilder Switch Time::Local Mail::POP3Client Mail::IMAPClient Mail::Message IO::Socket::SSL readline
 
-echo "Please Press ENTER for CPAN Install"
-
-yum install perl-CPAN -y
-yum install perl-YAML -y
-yum install perl-libwww-perl -y
-yum install perl-DBI -y
-yum install perl-DBD-MySQL -y
-yum install perl-GD -y
-cd /usr/bin/
-curl -LOk http://xrl.us/cpanm
-chmod +x cpanm
-cpanm -f File::HomeDir
-cpanm -f File::Which
-cpanm CPAN::Meta::Requirements
-cpanm -f CPAN
-cpanm YAML
-cpanm MD5
-cpanm Digest::MD5
-cpanm Digest::SHA1
-cpanm readline --force
-
-
-cpanm Bundle::CPAN
-cpanm DBI
-cpanm -f DBD::mysql
-cpanm Net::Telnet
-cpanm Time::HiRes
-cpanm Net::Server
-cpanm Switch
-cpanm Mail::Sendmail
-cpanm Unicode::Map
-cpanm Jcode
-cpanm Spreadsheet::WriteExcel
-cpanm OLE::Storage_Lite
-cpanm Proc::ProcessTable
-cpanm IO::Scalar
-cpanm Spreadsheet::ParseExcel
-cpanm Curses
-cpanm Getopt::Long
-cpanm Net::Domain
-cpanm Term::ReadKey
-cpanm Term::ANSIColor
-cpanm Spreadsheet::XLSX
-cpanm Spreadsheet::Read
-cpanm LWP::UserAgent
-cpanm HTML::Entities
-cpanm HTML::Strip
-cpanm HTML::FormatText
-cpanm HTML::TreeBuilder
-cpanm Time::Local
-cpanm MIME::Decoder
-cpanm Mail::POP3Client
-cpanm Mail::IMAPClient
-cpanm Mail::Message
-cpanm IO::Socket::SSL
-cpanm MIME::Base64
-cpanm MIME::QuotedPrint
-cpanm Crypt::Eksblowfish::Bcrypt
-cpanm Crypt::RC4
-cpanm Text::CSV
-cpanm Text::CSV_XS
-
+curl -fsSL https://raw.githubusercontent.com/skaji/cpm/main/cpm | perl - install -g App::cpm
+cpm install -g
 
 #Install Asterisk Perl
 cd /usr/src
@@ -97,7 +45,7 @@ wget http://download.vicidial.com/required-apps/asterisk-perl-0.08.tar.gz
 tar xzf asterisk-perl-0.08.tar.gz
 cd asterisk-perl-0.08
 perl Makefile.PL
-make all
+make -j ${JOBS} all
 make install 
 
 dnf --enablerepo=powertools install libsrtp-devel -y
@@ -110,7 +58,7 @@ wget http://downloads.sourceforge.net/project/lame/lame/3.99/lame-3.99.5.tar.gz
 tar -zxf lame-3.99.5.tar.gz
 cd lame-3.99.5
 ./configure
-make
+make -j ${JOBS}
 make install
 
 
@@ -121,7 +69,7 @@ tar xvzf jansson*
 cd jansson-2.13
 ./configure
 make clean
-make
+make -j ${JOBS} 
 make install 
 ldconfig
 
@@ -137,7 +85,7 @@ sudo sed -i 's|<linux/pci-aspm.h>|<linux/pci.h>|g' /usr/src/dahdi-linux-complete
 
 yum -y install kernel-devel-$(uname -r)
 
-make
+make -j ${JOBS} 
 make install
 make install-config
 
@@ -145,7 +93,7 @@ yum -y install dahdi-tools-libs
 
 cd tools
 make clean
-make
+make -j ${JOBS} all
 make install
 make install-config
 
@@ -470,5 +418,3 @@ chkconfig asterisk off
 read -p 'Press Enter to Reboot: '
 
 echo "Restarting AlmaLinux"
-
-reboot
