@@ -22,7 +22,6 @@ dnf config-manager --set-enabled powertools
 
 mkdir /usr/src/asterisk
 cd /usr/src/asterisk
-wget http://downloads.asterisk.org/pub/telephony/libpri/libpri-current.tar.gz
 wget http://downloads.asterisk.org/pub/telephony/asterisk/asterisk-18-current.tar.gz
 tar zxvf asterisk-18-current.tar.gz
 rm -rf asterisk-18-current.tar.gz
