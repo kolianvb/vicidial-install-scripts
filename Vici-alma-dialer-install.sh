@@ -433,4 +433,3 @@ fi
     
     echo "Restarting AlmaLinux"
     reboot
-[root@s211984 vicidial-install-scripts]# 
