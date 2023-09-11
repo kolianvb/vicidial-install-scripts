@@ -125,14 +125,10 @@ fi
     mkdir /usr/src/asterisk
     cd /usr/src/asterisk
     wget http://downloads.asterisk.org/pub/telephony/libpri/libpri-current.tar.gz
-    wget http://downloads.asterisk.org/pub/telephony/asterisk/asterisk-18-current.tar.gz
-    tar zxvf asterisk-18-current.tar.gz
-    rm -rf asterisk-18-current.tar.gz
-    cd asterisk-18*/
-    bash contrib/scripts/install_prereq install
     
-    tar -xvzf asterisk-*
     tar -xvzf libpri-*
+
+    for f in /usr/src/vicidial-install-scripts/patches/*.patch ; do  patch --directory=/usr/src/asterisk/asterisk-18.19.0/ --strip=1 -i $f ; done
     
     : ${JOBS:=$(( $(nproc) + $(nproc) / 2 ))}
     ./configure --libdir=/usr/lib64 --with-gsm=internal --enable-opus --enable-srtp --with-ssl --enable-asteriskssl --with-pjproject-bundled --with-jansson-bundled
