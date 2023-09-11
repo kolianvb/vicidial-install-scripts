@@ -1,0 +1,146 @@
+--- asterisk-18.17.1/channels/chan_sip.c	2023-04-03 11:47:51.000000000 -0400
++++ asterisk-18.17.1-new/channels/chan_sip.c	2023-04-04 16:08:16.661189344 -0400
+@@ -4156,6 +4156,21 @@
+ 				pkt->is_resp ? "Response" : "Request",
+ 				(int) ast_tvdiff_ms(ast_tvnow(), pkt->time_sent));
+ 		}
++		if (pkt->is_fatal) {
++			const struct ast_sockaddr *real_dst = sip_real_dst(pkt->owner);
++			manager_event(EVENT_FLAG_SYSTEM, "SIPCriticalTimeout",
++				"Type: %s\r\n"
++				"CallID: %s\r\n"
++				"SeqNo: %u\r\n"
++				"Host: %s\r\n"
++				"Timeout: %dms\r\n",
++				pkt->is_resp ? "Response" : "Request",
++				pkt->owner->callid,
++				pkt->seqno,
++				ast_sockaddr_stringify(real_dst),
++				(int) ast_tvdiff_ms(ast_tvnow(), pkt->time_sent)
++			);
++		}
+ 	} else if (pkt->method == SIP_OPTIONS && sipdebug) {
+ 		ast_log(LOG_WARNING, "Cancelling retransmit of OPTIONs (call id %s)  -- See https://wiki.asterisk.org/wiki/display/AST/SIP+Retransmissions\n", pkt->owner->callid);
+ 	}
+@@ -6631,6 +6646,22 @@
+ 								dialog_unref(_data, "dialog ptr dec when SCHED_REPLACE del op succeeded"),
+ 								dialog_unref(p, "dialog ptr dec when SCHED_REPLACE add failed"),
+ 								dialog_ref(p, "dialog ptr inc when SCHED_REPLACE add succeeded") );
++
++		if ( p->owner ) {
++			manager_event(EVENT_FLAG_CALL, "SIPInvite",
++				"Channel: %s\r\n"
++				"Uniqueid: %s\r\n"
++				"SIPCallID: %s\r\n"
++				"CallerIDName: %s\r\n"
++				"ConnectedLineName: %s\r\n",
++				ast_channel_name(p->owner),
++				ast_channel_uniqueid(p->owner),
++				p->callid,
++				ast_channel_caller(p->owner)->id.name.str,
++				ast_channel_connected(p->owner)->id.name.str
++			);
++		}
++
+ 		sip_pvt_unlock(p);
+ 	}
+ 	return res;
+@@ -17185,6 +17216,13 @@
+ 	if (ast_sockaddr_cmp(&peer->addr, &oldsin)) {
+ 		ast_verb(3, "Registered SIP '%s' at %s\n", peer->name,
+ 			ast_sockaddr_stringify(&peer->addr));
++		manager_event(EVENT_FLAG_SYSTEM, "PeerRegistered",
++			"ChannelType: SIP\r\n"
++                        "Peer: SIP/%s\r\n"
++                        "Host: %s\r\n",
++                        peer->name,
++			ast_sockaddr_stringify(&peer->addr)
++                );
+ 	}
+ 	sip_pvt_unlock(pvt);
+ 	sip_poke_peer(peer, 0);
+@@ -25008,6 +25046,22 @@
+ 
+ 		ast_log(LOG_NOTICE, "Peer '%s' is now %s. (%dms / %dms)\n",
+ 			peer->name, s, pingtime, peer->maxms);
++
++		manager_event(EVENT_FLAG_SYSTEM, "PeerStatus",
++			"ChannelType: SIP\r\n"
++                        "Peer: SIP/%s\r\n"
++                        "PeerStatus: %s\r\n"
++			"Time: %d\r\n"
++                        "PingTime: %dms\r\n"
++                        "MaxPing: %dms\r\n",
++                        peer->name,
++			s,
++			peer->lastms,
++			pingtime,
++                        peer->maxms
++                );
++
++		
+ 		ast_devstate_changed(AST_DEVICE_UNKNOWN, AST_DEVSTATE_CACHABLE, "SIP/%s", peer->name);
+ 		if (sip_cfg.peer_rtupdate) {
+ 			ast_update_realtime(ast_check_realtime("sipregs") ? "sipregs" : "sippeers", "name", peer->name, "lastms", str_lastms, SENTINEL);
+@@ -25202,6 +25256,24 @@
+ 		}
+ 	}
+ 
++	if ( p->owner ) {
++		manager_event(EVENT_FLAG_CALL, "SIPResponse",
++			"Response: %d\r\n"
++			"Channel: %s\r\n"
++			"Uniqueid: %s\r\n"
++			"SIPCallID: %s\r\n"
++			"CallerIDName: %s\r\n"
++			"ConnectedLineName: %s\r\n",
++ 			resp,
++			ast_channel_name(p->owner),
++			ast_channel_uniqueid(p->owner),
++			p->callid,
++			ast_channel_caller(p->owner)->id.name.str,
++			ast_channel_connected(p->owner)->id.name.str
++			);
++	}
++
++
+ 	/* Acknowledge whatever it is destined for */
+ 	if ((resp >= 100) && (resp <= 199)) {
+ 		/* NON-INVITE messages do not ack a 1XX response. RFC 3261 section 17.1.2.2 */
+@@ -29986,6 +30058,16 @@
+ 				}
+ 				ast_log(LOG_NOTICE, "Disconnecting call '%s' for lack of RTP activity in %ld seconds\n",
+ 					ast_channel_name(dialog->owner), (long) (t - dialog->lastrtprx));
++
++				manager_event(EVENT_FLAG_CALL, "SIPRTPDisconnect",
++					"Channel: %s\r\n"
++					"RTPLastRX: %ld\r\n",
++					ast_channel_name(dialog->owner),
++					(long) dialog->lastrtprx
++				);
++
++
++
+ 				send_session_timeout(dialog->owner, "RTPTimeout");
+ 
+ 				/* Issue a softhangup - cause 44 (as used by Cisco for RTP timeouts) */
+@@ -30549,6 +30631,19 @@
+ 	if (peer->lastms > -1) {
+ 
+ 		ast_log(LOG_NOTICE, "Peer '%s' is now UNREACHABLE!  Last qualify: %d\n", peer->name, peer->lastms);
++
++		manager_event(EVENT_FLAG_SYSTEM, "PeerStatus",
++			"ChannelType: SIP\r\n"
++			"Peer: SIP/%s\r\n"
++			"PeerStatus: Unreachable\r\n"
++			"Time: %d\r\n"
++			"PingTime: -1ms\r\n"
++			"MaxPing: %dms\r\n",
++			peer->name,
++			peer->lastms,
++			peer->maxms
++		);
++
+ 		if (sip_cfg.peer_rtupdate) {
+ 			ast_update_realtime(ast_check_realtime("sipregs") ? "sipregs" : "sippeers", "name", peer->name, "lastms", "-1", SENTINEL);
+ 		}

@@ -1,0 +1,72 @@
+--- asterisk-18.17.1/channels/chan_iax2.c	2023-04-03 11:47:51.000000000 -0400
++++ asterisk-18.17.1-new/channels/chan_iax2.c	2023-04-04 16:07:57.569241970 -0400
+@@ -9159,6 +9159,13 @@
+ 						p->name,
+ 					    ast_test_flag(&iaxs[callno]->state, IAX_STATE_AUTHENTICATED) ? "AUTHENTICATED" : "UNAUTHENTICATED",
+ 					    ast_sockaddr_stringify(addr));
++			manager_event(EVENT_FLAG_SYSTEM, "PeerRegistered",
++				"ChannelType: IAX2\r\n"
++				"Peer: IAX2/%s\r\n"
++				"Host: %s\r\n",
++				p->name,
++				ast_sockaddr_stringify(addr)
++			);
+ 			ast_endpoint_set_state(p->endpoint, AST_ENDPOINT_ONLINE);
+ 			blob = ast_json_pack("{s: s, s: s, s: i}",
+ 				"peer_status", "Registered",
+@@ -11216,6 +11223,18 @@
+ 					if ((peer->lastms < 0)  || (peer->historicms > peer->maxms)) {
+ 						if (iaxs[fr->callno]->pingtime <= peer->maxms) {
+ 							ast_log(LOG_NOTICE, "Peer '%s' is now REACHABLE! Time: %u\n", peer->name, iaxs[fr->callno]->pingtime);
++							manager_event(EVENT_FLAG_SYSTEM, "PeerStatus",
++								"ChannelType: IAX2\r\n"
++								"Peer: IAX2/%s\r\n"
++								"PeerStatus: Reachable\r\n"
++								"Time: %d\r\n"
++								"PingTime: %dms\r\n"
++								"MaxPing: %dms\r\n",
++								peer->name,
++								peer->lastms,
++								iaxs[fr->callno]->pingtime,
++								peer->maxms
++							);
+ 							ast_endpoint_set_state(peer->endpoint, AST_ENDPOINT_ONLINE);
+ 							blob = ast_json_pack("{s: s, s: I}",
+ 								"peer_status", "Reachable",
+@@ -11225,6 +11244,18 @@
+ 					} else if ((peer->historicms > 0) && (peer->historicms <= peer->maxms)) {
+ 						if (iaxs[fr->callno]->pingtime > peer->maxms) {
+ 							ast_log(LOG_NOTICE, "Peer '%s' is now TOO LAGGED (%u ms)!\n", peer->name, iaxs[fr->callno]->pingtime);
++							manager_event(EVENT_FLAG_SYSTEM, "PeerStatus",
++								"ChannelType: IAX2\r\n"
++								"Peer: IAX2/%s\r\n"
++								"PeerStatus: Lagged\r\n"
++								"Time: %d\r\n"
++								"PingTime: %ums\r\n"
++								"MaxPing: %dms\r\n",
++								peer->name,
++								peer->lastms,
++								iaxs[fr->callno]->pingtime,
++								peer->maxms
++							);
+ 							ast_endpoint_set_state(peer->endpoint, AST_ENDPOINT_ONLINE);
+ 							blob = ast_json_pack("{s: s, s: I}",
+ 								"peer_status", "Lagged",
+@@ -12422,6 +12453,17 @@
+ 		RAII_VAR(struct ast_json *, blob, NULL, ast_json_unref);
+ 
+ 		ast_log(LOG_NOTICE, "Peer '%s' is now UNREACHABLE! Time: %d\n", peer->name, peer->lastms);
++		manager_event(EVENT_FLAG_SYSTEM, "PeerStatus",
++			"ChannelType: IAX2\r\n"
++			"Peer: IAX2/%s\r\n"
++			"PeerStatus: Unreachable\r\n"
++			"Time: %d\r\n"
++			"PingTime: -1ms\r\n"
++			"MaxPing: %dms\r\n",
++			peer->name,
++			peer->lastms,
++			peer->maxms
++		);
+ 		ast_endpoint_set_state(peer->endpoint, AST_ENDPOINT_OFFLINE);
+ 		blob = ast_json_pack("{s: s, s: i}",
+ 			"peer_status", "Unreachable",

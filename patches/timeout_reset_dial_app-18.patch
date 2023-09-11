@@ -1,0 +1,36 @@
+--- asterisk-18.17.1/apps/app_dial.c	2023-04-03 11:47:51.000000000 -0400
++++ asterisk-18.17.1-new/apps/app_dial.c	2023-04-04 16:24:16.122540551 -0400
+@@ -1264,6 +1264,7 @@
+ 	int cc_frame_received = 0;
+ 	int num_ringing = 0;
+ 	int sent_ring = 0;
++	int to_reset = 0;
+ 	int sent_progress = 0, sent_wink = 0;
+ 	struct timeval start = ast_tvnow();
+ 	SCOPE_ENTER(3, "%s\n", ast_channel_name(in));
+@@ -1570,6 +1571,12 @@
+ 							ast_channel_unlock(in);
+ 							sent_ring = 1;
+ 						}
++						if (!to_reset) {
++							*to = orig;
++							start = ast_tvnow();
++							to_reset = 1;
++							ast_verb(3, "Dial Tiemout Reset on channel %s due to RINGING message\n",ast_channel_name(c));
++						}
+ 					}
+ 					ast_channel_publish_dial(in, c, NULL, "RINGING");
+ 					break;
+@@ -1625,6 +1632,12 @@
+ 								dtmf_progress);
+ 							ast_dtmf_stream(c, in, dtmf_progress, 250, 0);
+ 						}
++						if (!to_reset) {
++							*to = orig;
++							start = ast_tvnow();
++							to_reset = 1;
++							ast_verb(3, "Dial Tiemout Reset on channel %s due to PROGRESS message.\n",ast_channel_name(c));
++						}
+ 					}
+ 					ast_channel_publish_dial(in, c, NULL, "PROGRESS");
+ 					break;

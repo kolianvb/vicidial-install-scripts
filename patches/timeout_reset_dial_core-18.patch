@@ -1,0 +1,22 @@
+--- asterisk-18.17.1/main/dial.c	2023-04-03 11:47:51.000000000 -0400
++++ asterisk-18.17.1-new/main/dial.c	2023-04-04 16:08:47.737103515 -0400
+@@ -768,6 +768,7 @@
+ static enum ast_dial_result monitor_dial(struct ast_dial *dial, struct ast_channel *chan)
+ {
+ 	int timeout = -1;
++	int to_reset = 0;
+ 	struct ast_channel *cs[AST_MAX_WATCHERS], *who = NULL;
+ 	struct ast_dial_channel *channel = NULL;
+ 	struct answer_exec_struct *answer_exec = NULL;
+@@ -800,6 +801,11 @@
+ 		int pos = 0, count = 0;
+ 		struct ast_frame *fr = NULL;
+ 
++		if ((!to_reset) && ((dial->state == AST_DIAL_RESULT_PROGRESS) || (dial->state == AST_DIAL_RESULT_RINGING))) {
++			to_reset = 1;
++			timeout = dial->actual_timeout;
++		}
++		
+ 		/* Set up channel structure array */
+ 		pos = count = 0;
+ 		if (chan)
