@@ -49,6 +49,8 @@ cd /usr/src/vicidial-install-scripts
 curl -fsSL https://raw.githubusercontent.com/skaji/cpm/main/cpm | perl - install -g App::cpm
 /usr/local/bin/cpm install -g
 
+: ${JOBS:=$(( $(nproc) + $(nproc) / 2 ))}
+
 #Install Asterisk Perl
 cd /usr/src
 wget -nc http://download.vicidial.com/required-apps/asterisk-perl-0.08.tar.gz
