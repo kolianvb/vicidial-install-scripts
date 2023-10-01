@@ -7,7 +7,7 @@ yum check-update
 yum update -y
 yum -y install epel-release
 yum update -y
-yum -y install yum-utils kernel kernel-devel kernel-headers screen libX11-devel
+yum -y install yum-utils kernel kernel-devel kernel-headers screen libX11-devel glibc-devel.i686
 
 
 #Disable SELINUX
