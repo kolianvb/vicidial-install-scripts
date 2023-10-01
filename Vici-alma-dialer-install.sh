@@ -7,8 +7,10 @@ yum check-update
 yum update -y
 yum -y install epel-release
 yum update -y
-yum -y install yum-utils kernel kernel-devel kernel-headers screen libX11-devel
-
+yum -y install yum-utils kernel kernel-devel kernel-headers screen libX11-devel python3 
+yum install python3
+pip3 install pyst2 --upgrade
+pip3 install websocket_client
 
 #Disable SELINUX
 sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
@@ -27,13 +29,13 @@ yum groupinstall "Development Tools" -y
   
 yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
 yum -y install http://rpms.remirepo.net/enterprise/remi-release-8.rpm
-yum -y install yum-utils kernel kernel-devel kernel-headers screen libX11-devel wget
+yum -y install screen libX11-devel wget sox
 dnf module enable php:remi-7.4 -y
 
 dnf -y install dnf-plugins-core
 dnf config-manager --set-enabled powertools
   
-yum -y install sqlite-devel
+yum -y install sqlite-devel sox
   
 dnf -y install dnf-plugins-core
 dnf config-manager --set-enabled powertools
@@ -95,9 +97,10 @@ ldconfig
 echo "Install Dahdi"
 cd /usr/src/
 wget -nc https://downloads.asterisk.org/pub/telephony/dahdi-linux-complete/dahdi-linux-complete-3.2.0+3.2.0.tar.gz
-tar xzf dahdi*
-cd /usr/src/dahdi-linux-complete-*
-    
+tar xzf dahdi-linux*.tar.gz
+rm -rf dahdi-linux*.tar.gz
+cd /usr/src/dahdi-linux*
+ 
 sudo sed -i 's|(netdev, \&wc->napi, \&wctc4xxp_poll, 64);|(netdev, \&wc->napi, \&wctc4xxp_poll);|g' /usr/src/dahdi-linux-complete-3.2.0+3.2.0/linux/drivers/dahdi/wctc4xxp/base.c
 sudo sed -i 's|<linux/pci-aspm.h>|<linux/pci.h>|g' /usr/src/dahdi-linux-complete-3.2.0+3.2.0/linux/include/dahdi/kernel.h
     
@@ -147,6 +150,10 @@ read -p 'Press Enter to continue: '
 
 echo 'Continuing...'
 
+wget http://download.amdy.io/amd.tar.gz
+tar zxvf amd.tar.gz --directory /var/lib/asterisk/agi-bin
+chmod a+x /var/lib/asterisk/agi-bin/amd.py
+
 #Install astguiclient
 echo "Installing astguiclient"
 mkdir /usr/src/astguiclient
@@ -158,7 +165,7 @@ read -p 'Press Enter to continue: '
 
 echo 'Continuing...'
 
-    #Get astguiclient.conf file
+#Get astguiclient.conf file
 cat <<ASTGUI>> /etc/astguiclient.conf
 # astguiclient.conf - configuration elements for the astguiclient package
 # this is the astguiclient configuration file
@@ -253,6 +260,7 @@ perl install.pl --no-prompt
   
     
 #Install Crontab
+rm /root/crontab-file
 cat <<CRONTAB>> /root/crontab-file
 
 ### recording mixing/compressing/ftping scripts
@@ -294,8 +302,6 @@ cat <<CRONTAB>> /root/crontab-file
 30 0 * * * /usr/bin/find / -maxdepth 1 -name "screenlog.0*" -mtime +4 -print | xargs rm -f
 
 ### cleanup of the scheduled callback records
-/ && find . -name '*TILTXtmp*' -type f -delete
-
 
 CRONTAB
 
