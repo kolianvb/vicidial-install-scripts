@@ -87,26 +87,17 @@ ldconfig
     
     
     
-    #Install Dahdi
+#Install Dahdi
 echo "Install Dahdi"
-cd /usr/src/
-wget -nc https://downloads.asterisk.org/pub/telephony/dahdi-linux-complete/dahdi-linux-complete-3.2.0+3.2.0.tar.gz
-tar xzf dahdi*
-cd /usr/src/dahdi-linux-complete-*
-    
-sudo sed -i 's|(netdev, \&wc->napi, \&wctc4xxp_poll, 64);|(netdev, \&wc->napi, \&wctc4xxp_poll);|g' /usr/src/dahdi-linux-complete-3.2.0+3.2.0/linux/drivers/dahdi/wctc4xxp/base.c
-sudo sed -i 's|<linux/pci-aspm.h>|<linux/pci.h>|g' /usr/src/dahdi-linux-complete-3.2.0+3.2.0/linux/include/dahdi/kernel.h
-    
-    
-    
-make -j ${JOBS} 
+yum install dahdi-* -y
+wget http://download.vicidial.com/beta-apps/dahdi-linux-complete-2.11.1.tar.gz
+tar xzf dahdi-linux-complete-2.11.1.tar.gz
+cd dahdi-linux-complete-2.11.1+2.11.1
+make all
 make install
-make install-config
-    
-    
 modprobe dahdi
 modprobe dahdi_dummy
-    
+make config
 cp /etc/dahdi/system.conf.sample /etc/dahdi/system.conf
 /usr/sbin/dahdi_cfg -vvvvvvvvvvvvv
 
