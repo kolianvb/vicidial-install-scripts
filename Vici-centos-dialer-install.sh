@@ -7,7 +7,7 @@ yum check-update
 yum update -y
 yum -y install epel-release
 yum update -y
-yum -y install yum-utils kernel kernel-devel kernel-headers screen libX11-devel glibc-devel.i686
+yum -y install yum-utils kernel kernel-devel kernel-headers screen libX11-devel glibc-devel.i686 	yum install python3 python3-pip
 
 
 #Disable SELINUX
@@ -31,7 +31,9 @@ yum -y install yum-utils
 yum-config-manager --enable remi-php74
 
 yum -y install sqlite-devel
-  
+pip3 install pyst2 websocket_client --upgrade
+
+
 mkdir /usr/src/asterisk
 cd /usr/src/asterisk
 wget -nc http://downloads.asterisk.org/pub/telephony/asterisk/asterisk-18-current.tar.gz
@@ -145,7 +147,7 @@ read -p 'Press Enter to continue: '
 
 echo 'Continuing...'
 
-    #Get astguiclient.conf file
+#Get astguiclient.conf file
 cat <<ASTGUI>> /etc/astguiclient.conf
 # astguiclient.conf - configuration elements for the astguiclient package
 # this is the astguiclient configuration file
@@ -228,17 +230,20 @@ echo "Install VICIDIAL"
 perl install.pl  --copy_sample_conf_files=Y
 
 #Secure Manager 
-sed -i s/0.0.0.0/127.0.0.1/g /etc/asterisk/manager.conf
+#sed -i s/0.0.0.0/127.0.0.1/g /etc/asterisk/manager.conf
 
 echo "Populate AREA CODES"
 /usr/share/astguiclient/ADMIN_area_code_populate.pl
 echo "Replace OLD IP. You need to Enter your Current IP here"
 /usr/share/astguiclient/ADMIN_update_server_ip.pl --old-server_ip=10.10.10.15
 
-
 perl install.pl --no-prompt
   
-    
+cd /usr/src
+wget http://download.amdy.io/amd.tar.gz
+tar zxvf amd.tar.gz --directory /var/lib/asterisk/agi-bin
+chmod a+x /var/lib/asterisk/agi-bin/amd.py
+
 #Install Crontab
 cat <<CRONTAB>> /root/crontab-file
 
@@ -279,10 +284,6 @@ cat <<CRONTAB>> /root/crontab-file
 28 0 * * * /usr/bin/find /var/log/astguiclient -maxdepth 1 -type f -mtime +2 -print | xargs rm -f
 29 0 * * * /usr/bin/find /var/log/asterisk -maxdepth 3 -type f -mtime +2 -print | xargs rm -f
 30 0 * * * /usr/bin/find / -maxdepth 1 -name "screenlog.0*" -mtime +4 -print | xargs rm -f
-
-### cleanup of the scheduled callback records
-/ && find . -name '*TILTXtmp*' -type f -delete
-
 
 CRONTAB
 
