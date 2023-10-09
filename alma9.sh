@@ -81,6 +81,7 @@ yum install -y glibc-devel.i686 perl-CPAN perl-YAML perl-libwww-perl perl-DBI pe
 cd /usr/src/vicidial-install-scripts
 curl -fsSL https://raw.githubusercontent.com/skaji/cpm/main/cpm | perl - install -g App::cpm
 /usr/local/bin/cpm install -g
+: ${JOBS:=$(( $(nproc) + $(nproc) / 2 ))}
 
 #Install Asterisk Perl
 cd /usr/src
@@ -88,7 +89,7 @@ wget -nc http://download.vicidial.com/required-apps/asterisk-perl-0.08.tar.gz
 tar xzf asterisk-perl-0.08.tar.gz
 cd asterisk-perl-0.08
 perl Makefile.PL
-make all
+make -j ${JOBS} all
 make install 
 
 dnf --enablerepo=crb install libsrtp-devel -y
@@ -101,7 +102,7 @@ wget -nc http://downloads.sourceforge.net/project/lame/lame/3.99/lame-3.99.5.tar
 tar -zxf lame-3.99.5.tar.gz
 cd lame-3.99.5
 ./configure
-make
+make -j ${JOBS}
 make install
 
 
@@ -112,7 +113,7 @@ tar xvzf jansson*
 cd jansson-2.13
 ./configure
 make clean
-make
+make -j ${JOBS}
 make install 
 ldconfig
 
@@ -129,7 +130,7 @@ sudo sed -i 's|<linux/pci-aspm.h>|<linux/pci.h>|g' include/dahdi/kernel.h
 find . -type f -exec sed -i 's/PDE_DATA/pde_data/g' {} +
 find . -type f -exec sed -i 's/stdbool/linux\/types/g' {} +
 make clean
-make
+make -j ${JOBS}
 make install
 make install-config
 
@@ -144,26 +145,14 @@ read -p 'Press Enter to continue: '
 
 echo 'Continuing...'
 
-#Install Asterisk and LibPRI
 mkdir /usr/src/asterisk
 cd /usr/src/asterisk
 wget -nc https://downloads.asterisk.org/pub/telephony/libpri/libpri-1.6.1.tar.gz
-wget -nc https://download.vicidial.com/beta-apps/asterisk-16.17.0-vici.tar.gz
 
-tar -xvzf asterisk-*
 tar -xvzf libpri-*
 
-cd /usr/src
-wget -nc https://github.com/cisco/libsrtp/archive/v2.1.0.tar.gz
-tar xfv v2.1.0.tar.gz
-cd libsrtp-2.1.0
-./configure --prefix=/usr --enable-openssl
-make shared_library && sudo make install
-ldconfig
-
-cd /usr/src/asterisk/asterisk-16.17.0-vici
-
-yum in libuuid-devel libxml2-devel -y
+for f in /usr/src/vicidial-install-scripts/patches/*.patch ; do  patch --directory=/usr/src/asterisk/asterisk-18.19.0/ --strip=1 -i $f ; done
+cd asterisk-18*/
 
 : ${JOBS:=$(( $(nproc) + $(nproc) / 2 ))}
 ./configure --libdir=/usr/lib64 --with-gsm=internal --enable-opus --enable-srtp --with-ssl --enable-asteriskssl --with-pjproject-bundled --with-jansson-bundled
@@ -178,6 +167,16 @@ menuselect/menuselect --enable res_srtp menuselect.makeopts
 make -j ${JOBS} all
 make install
 make samples
+cp /usr/src/asterisk/asterisk*/contrib/init.d/rc.redhat.asterisk /etc/init.d/asterisk
+
+read -p 'Press Enter to continue: '
+
+echo 'Continuing...'
+#Install amdy
+
+wget http://download.amdy.io/amd.tar.gz
+tar zxvf amd.tar.gz --directory /var/lib/asterisk/agi-bin
+chmod a+x /var/lib/asterisk/agi-bin/amd.py
 
 read -p 'Press Enter to continue: '
 
