@@ -32,9 +32,8 @@ rm -rf asterisk-18-current.tar.gz
 cd asterisk-18*/
 bash contrib/scripts/install_prereq install
 
-dnf --enablerepo=crb install libsrtp-devel -y
+
 dnf config-manager --set-enabled crb
-yum install libsrtp-devel -y
 
 tee -a /etc/httpd/conf/httpd.conf <<EOF
 
@@ -99,7 +98,6 @@ perl Makefile.PL
 make -j ${JOBS} all
 make install 
 
-dnf --enablerepo=crb install libsrtp-devel -y
 yum install -y elfutils-libelf-devel libedit-devel
 
 
@@ -151,9 +149,29 @@ modprobe dahdi_dummy
 read -p 'Press Enter to continue: '
 
 echo 'Continuing...'
+yum -y remove libsrtp*
+git clone https://github.com/cisco/libsrtp.git
+cd libsrtp/
+./configure CFLAGS=-fPIC --prefix=/usr
+make shared_library
+make install
+ldconfig
+
+
+
 
 mkdir /usr/src/asterisk
 cd /usr/src/asterisk
+
+echo 'Continuing...'
+yum -y remove libsrtp*
+git clone https://github.com/cisco/libsrtp.git
+cd libsrtp/
+./configure CFLAGS=-fPIC --prefix=/usr
+make shared_library
+make install
+ldconfig
+
 wget -nc https://downloads.asterisk.org/pub/telephony/libpri/libpri-1.6.1.tar.gz
 
 tar -xvzf libpri-*
@@ -162,7 +180,7 @@ for f in /usr/src/vicidial-install-scripts/patches/*.patch ; do  patch --directo
 cd asterisk-18*/
 
 : ${JOBS:=$(( $(nproc) + $(nproc) / 2 ))}
-./configure --libdir=/usr/lib64 --with-gsm=internal --enable-opus --enable-srtp --with-ssl --enable-asteriskssl --with-pjproject-bundled --with-jansson-bundled
+./configure --libdir=/usr/lib64 --with-gsm=internal --enable-opus --enable-srtp --with-ssl --enable-asteriskssl --with-pjproject-bundled --with-jansson-bundled --with-srtp=/usr/lib64
 
 make menuselect/menuselect menuselect-tree menuselect.makeopts
 #enable app_meetme
