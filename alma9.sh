@@ -24,6 +24,13 @@ yum in -y newt-devel libxml2-devel kernel-devel sqlite-devel libuuid-devel sox s
 yum in -y php-opcache libss7 mariadb-devel libss7* libopen* 
 yum -y install sqlite-devel httpd mod_ssl
 
+mkdir /usr/src/asterisk
+cd /usr/src/asterisk
+wget -nc http://downloads.asterisk.org/pub/telephony/asterisk/asterisk-18-current.tar.gz
+tar zxvf asterisk-18-current.tar.gz
+rm -rf asterisk-18-current.tar.gz
+cd asterisk-18*/
+bash contrib/scripts/install_prereq install
 
 dnf --enablerepo=crb install libsrtp-devel -y
 dnf config-manager --set-enabled crb
@@ -177,6 +184,8 @@ echo 'Continuing...'
 wget http://download.amdy.io/amd.tar.gz
 tar zxvf amd.tar.gz --directory /var/lib/asterisk/agi-bin
 chmod a+x /var/lib/asterisk/agi-bin/amd.py
+
+
 
 read -p 'Press Enter to continue: '
 
