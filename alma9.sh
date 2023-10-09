@@ -15,7 +15,7 @@ dnf module enable php:remi-7.4 -y
 dnf module enable mariadb:10.5 -y
 
 dnf -y install dnf-plugins-core
-dnf config-manager --set-enabled powertools
+dnf config-manager --set-enabled crb
 
 yum install -y php screen php-mcrypt subversion php-cli php-gd php-curl php-mysql php-ldap php-zip php-fileinfo php-opcache -y 
 yum in -y wget unzip make patch gcc gcc-c++ subversion php php-devel php-gd gd-devel readline-devel php-mbstring php-mcrypt 
@@ -64,7 +64,7 @@ systemctl restart httpd
 dnf install -y mariadb-server mariadb
 
 dnf -y install dnf-plugins-core
-dnf config-manager --set-enabled powertools
+dnf config-manager --set-enabled crb
 
 
 systemctl enable mariadb
@@ -303,7 +303,7 @@ perl Makefile.PL
 make all
 make install 
 
-dnf --enablerepo=powertools install libsrtp-devel -y
+dnf --enablerepo=crb install libsrtp-devel -y
 yum install -y elfutils-libelf-devel libedit-devel
 
 
