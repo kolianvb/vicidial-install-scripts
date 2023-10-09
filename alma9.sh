@@ -331,31 +331,21 @@ ldconfig
 #Install Dahdi
 echo "Install Dahdi"
 
-cd /etc/include
-wget https://dialer.one/newt.h
 
 cd /usr/src/
-mkdir dahdi-linux-complete-3.2.0+3.2.0
-cd dahdi-linux-complete-3.2.0+3.2.0
-wget https://dialer.one/dahdi-alma9.zip
-unzip dahdi-alma9.zip
-yum in newt* -y
+git clone -b next git://git.asterisk.org/dahdi/linux dahdi-linux
+cd /usr/src/dahdi-linux
 
-sudo sed -i 's|(netdev, \&wc->napi, \&wctc4xxp_poll, 64);|(netdev, \&wc->napi, \&wctc4xxp_poll);|g' /usr/src/dahdi-linux-complete-3.2.0+3.2.0/linux/drivers/dahdi/wctc4xxp/base.c
-sudo sed -i 's|<linux/pci-aspm.h>|<linux/pci.h>|g' /usr/src/dahdi-linux-complete-3.2.0+3.2.0/linux/include/dahdi/kernel.h
-
+sudo sed -i 's|(netdev, \&wc->napi, \&wctc4xxp_poll, 64);|(netdev, \&wc->napi, \&wctc4xxp_poll);|g' drivers/dahdi/wctc4xxp/base.c
+sudo sed -i 's|<linux/pci-aspm.h>|<linux/pci.h>|g' include/dahdi/kernel.h
+find . -type f -exec sed -i 's/PDE_DATA/pde_data/g' {} +
+find . -type f -exec sed -i 's/stdbool/linux\/types/g' {} +
 make clean
 make
 make install
 make install-config
 
-yum -y install dahdi-tools-libs
-
-cd tools
-make clean
-make
-make install
-make install-config
+yum -y install dahdi-tools-libs dahdi-tools
 
 cp /etc/dahdi/system.conf.sample /etc/dahdi/system.conf
 modprobe dahdi
