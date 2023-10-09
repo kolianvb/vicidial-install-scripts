@@ -1,12 +1,14 @@
 #!/bin/bash
 
-echo "Download PBXWebPhone agc"
-cd /var/www/html/agc/
-git clone https://github.com/chornyitaras/PBXWebPhone.git
+echo "Download CyburPhone"
+cd /var/www/html
+git clone https://github.com/carpenox/CyburPhone.git
+chmod -R 744 CyburPhone
+chown -R apache:apache CyburPhone
 
 echo "Install certbot for LetsEncrypt"
 if [ -f /etc/redhat-release ]; then
-	yum -y install certbot python2-certbot-apache mod_ssl
+	yum -y install certbot python3-certbot-apache mod_ssl
 fi
 if [ -f /etc/lsb-release ]; then
 	sudo add-apt-repository ppa:certbot/certbot
