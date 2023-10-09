@@ -296,7 +296,7 @@ cpanm Text::CSV_XS
 
 #Install Asterisk Perl
 cd /usr/src
-wget http://download.vicidial.com/required-apps/asterisk-perl-0.08.tar.gz
+wget -nc http://download.vicidial.com/required-apps/asterisk-perl-0.08.tar.gz
 tar xzf asterisk-perl-0.08.tar.gz
 cd asterisk-perl-0.08
 perl Makefile.PL
@@ -309,7 +309,7 @@ yum install -y elfutils-libelf-devel libedit-devel
 
 #Install Lame
 cd /usr/src
-wget http://downloads.sourceforge.net/project/lame/lame/3.99/lame-3.99.5.tar.gz
+wget -nc http://downloads.sourceforge.net/project/lame/lame/3.99/lame-3.99.5.tar.gz
 tar -zxf lame-3.99.5.tar.gz
 cd lame-3.99.5
 ./configure
@@ -319,7 +319,7 @@ make install
 
 #Install Jansson
 cd /usr/src/
-wget https://digip.org/jansson/releases/jansson-2.13.tar.gz
+wget -nc https://digip.org/jansson/releases/jansson-2.13.tar.gz
 tar xvzf jansson*
 cd jansson-2.13
 ./configure
@@ -359,14 +359,14 @@ echo 'Continuing...'
 #Install Asterisk and LibPRI
 mkdir /usr/src/asterisk
 cd /usr/src/asterisk
-wget https://downloads.asterisk.org/pub/telephony/libpri/libpri-1.6.1.tar.gz
-wget https://download.vicidial.com/beta-apps/asterisk-16.17.0-vici.tar.gz
+wget -nc https://downloads.asterisk.org/pub/telephony/libpri/libpri-1.6.1.tar.gz
+wget -nc https://download.vicidial.com/beta-apps/asterisk-16.17.0-vici.tar.gz
 
 tar -xvzf asterisk-*
 tar -xvzf libpri-*
 
 cd /usr/src
-wget https://github.com/cisco/libsrtp/archive/v2.1.0.tar.gz
+wget -nc https://github.com/cisco/libsrtp/archive/v2.1.0.tar.gz
 tar xfv v2.1.0.tar.gz
 cd libsrtp-2.1.0
 ./configure --prefix=/usr --enable-openssl
@@ -695,10 +695,10 @@ systemctl start rc-local
 ##Install Dynportal
 yum install -y firewalld
 cd /home
-wget https://dialer.one/dynportal.zip
-wget https://dialer.one/firewall.zip
-wget https://dialer.one/aggregate
-wget https://dialer.one/VB-firewall
+wget -nc https://dialer.one/dynportal.zip
+wget -nc https://dialer.one/firewall.zip
+wget -nc https://dialer.one/aggregate
+wget -nc https://dialer.one/VB-firewall
 
 mkdir -p /var/www/vhosts/dynportal
 mv /home/dynportal.zip /var/www/vhosts/dynportal/
@@ -733,15 +733,15 @@ EOF
 ##Install Sounds
 
 cd /usr/src
-wget http://downloads.asterisk.org/pub/telephony/sounds/asterisk-core-sounds-en-ulaw-current.tar.gz
-wget http://downloads.asterisk.org/pub/telephony/sounds/asterisk-core-sounds-en-wav-current.tar.gz
-wget http://downloads.asterisk.org/pub/telephony/sounds/asterisk-core-sounds-en-gsm-current.tar.gz
-wget http://downloads.asterisk.org/pub/telephony/sounds/asterisk-extra-sounds-en-ulaw-current.tar.gz
-wget http://downloads.asterisk.org/pub/telephony/sounds/asterisk-extra-sounds-en-wav-current.tar.gz
-wget http://downloads.asterisk.org/pub/telephony/sounds/asterisk-extra-sounds-en-gsm-current.tar.gz
-wget http://downloads.asterisk.org/pub/telephony/sounds/asterisk-moh-opsound-gsm-current.tar.gz
-wget http://downloads.asterisk.org/pub/telephony/sounds/asterisk-moh-opsound-ulaw-current.tar.gz
-wget http://downloads.asterisk.org/pub/telephony/sounds/asterisk-moh-opsound-wav-current.tar.gz
+wget -nc http://downloads.asterisk.org/pub/telephony/sounds/asterisk-core-sounds-en-ulaw-current.tar.gz
+wget -nc http://downloads.asterisk.org/pub/telephony/sounds/asterisk-core-sounds-en-wav-current.tar.gz
+wget -nc http://downloads.asterisk.org/pub/telephony/sounds/asterisk-core-sounds-en-gsm-current.tar.gz
+wget -nc http://downloads.asterisk.org/pub/telephony/sounds/asterisk-extra-sounds-en-ulaw-current.tar.gz
+wget -nc http://downloads.asterisk.org/pub/telephony/sounds/asterisk-extra-sounds-en-wav-current.tar.gz
+wget -nc http://downloads.asterisk.org/pub/telephony/sounds/asterisk-extra-sounds-en-gsm-current.tar.gz
+wget -nc http://downloads.asterisk.org/pub/telephony/sounds/asterisk-moh-opsound-gsm-current.tar.gz
+wget -nc http://downloads.asterisk.org/pub/telephony/sounds/asterisk-moh-opsound-ulaw-current.tar.gz
+wget -nc http://downloads.asterisk.org/pub/telephony/sounds/asterisk-moh-opsound-wav-current.tar.gz
 
 #Place the audio files in their proper places:
 cd /var/lib/asterisk/sounds
