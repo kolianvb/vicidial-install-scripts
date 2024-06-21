@@ -224,17 +224,25 @@ echo 'Continuing...'
 #Install Asterisk and LibPRI
 mkdir /usr/src/asterisk
 cd /usr/src/asterisk
-wget http://downloads.asterisk.org/pub/telephony/libpri/libpri-current.tar.gz
-wget http://download.vicidial.com/required-apps/asterisk-13.29.2-vici.tar.gz
-
-
+wget https://downloads.asterisk.org/pub/telephony/libpri/libpri-1.6.1.tar.gz
+wget https://download.vicidial.com/required-apps/asterisk-16.30.1-vici.tar.gz
 tar -xvzf asterisk-*
 tar -xvzf libpri-*
 
-cd /usr/src/asterisk/asterisk*
+cd /usr/src
+wget https://github.com/cisco/libsrtp/archive/v2.1.0.tar.gz
+tar xfv v2.1.0.tar.gz
+cd libsrtp-2.1.0
+./configure --prefix=/usr --enable-openssl
+make shared_library && sudo make install
+ldconfig
+
+cd /usr/src/asterisk/asterisk-16.30.1-vici
+
+yum in libuuid-devel libxml2-devel -y
 
 : ${JOBS:=$(( $(nproc) + $(nproc) / 2 ))}
-./configure --libdir=/usr/lib --with-gsm=internal --enable-opus --enable-srtp --with-ssl --enable-asteriskssl --with-pjproject-bundled --with-jansson-bundled
+./configure --libdir=/usr/lib64 --with-gsm=internal --enable-opus --enable-srtp --with-ssl --enable-asteriskssl --with-pjproject-bundled --with-jansson-bundled
 
 make menuselect/menuselect menuselect-tree menuselect.makeopts
 #enable app_meetme
@@ -246,6 +254,11 @@ menuselect/menuselect --enable res_srtp menuselect.makeopts
 make -j ${JOBS} all
 make install
 make samples
+
+
+read -p 'Press Enter to continue: '
+
+echo 'Continuing...'
 
 read -p 'Press Enter to continue: '
 
